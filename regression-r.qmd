@@ -1,0 +1,129 @@
+---
+title: Linear regression in R
+subtitle: Cheatsheet
+date: today
+lightbox: true
+editor:
+  render-on-save: true
+---
+
+```{r setup}
+#| include: false
+
+if (!require("Require")) {
+    install.packages("Require")
+    require("Require")
+}
+Require(c(
+    car, emmeans, gt, gtsummary, rstatix, tidyverse, palmerpenguins
+))
+possums <- readxl::read_excel("possum_bw.xlsx")
+```
+
+::: {.grid}
+::: {.g-col-6}
+{{< include _license.qmd >}}
+
+::: {.callout-note collapse="true"}
+## Assumed knowledge
+- You know how to install and load packages in R.
+- You know how to import data into R.
+- You recognise data frames and vectors.
+:::
+:::
+::: {.g-col-6}
+{{< include _tidy.qmd >}}
+
+::: {.callout-important}
+## Data
+For this cheatsheet we will use data from the penguins dataset from the `palmerpenguins` package. You may need to install this package:
+
+```{r}
+#| eval: false
+install.packages("palmerpenguins")
+data(penguins)
+```
+
+:::
+:::
+:::
+
+## About 
+
+Regression analysis is the most commonly used statistical technique for modelling the relationship between variables that can be continuous, categorical or a mix of both. In fact, other techniques such as the *t*-test, ANOVA, ANCOVA and even non-parametric tests can be considered as special cases of regression analysis. In this cheatsheet, we will focus on **linear regression**.
+
+## R packages used
+
+
+## Implementing linear models
+
+
+#### Simple linear regression
+
+```{r}
+#| eval: true
+#| output: false
+fit01 <- lm(body_mass_g ~ flipper_length_mm, data = penguins)
+```
+
+#### Multiple linear regression
+
+```{r}
+#| eval: false
+fit02 <- lm(body_mass_g ~ flipper_length_mm + bill_length_mm,
+    data = penguins
+)
+```
+
+#### Interactions
+
+```{r}
+#| eval: true
+#| output: false
+fit03 <- lm(body_mass_g ~ flipper_length_mm * bill_length_mm,
+    data = penguins
+)
+```
+
+#### Regression involving categorical variables
+
+```{r}
+#| eval: false
+fit04 <- lm(body_mass_g ~ species + sex, data = penguins)
+```
+
+#### Regression involving a mix of continuous and categorical variables
+
+```{r}
+#| eval: false
+fit04 <- lm(body_mass_g ~ species + flipper_length_mm,
+    data = penguins
+)
+```
+
+## Assumptions 
+
+Use the `plot()` function on the linear mode object to check the assumptions of the linear regression model.
+
+```{r}
+#| fig-height: 6
+par(mfrow = c(2, 2)) # Set up a 2x2 grid of plots
+plot(fit01)
+par(mfrow = c(1, 1)) # Reset the plot layout
+```
+
+
+## Viewing interactions
+
+Use the `emmeans()` function to interpret interactions in a linear model. For continuous variables, you need to specify the range of the covariate with the `cov.reduce` argument -- set to `range` to avoid the default of using the mean.
+
+```{r}
+emmip(fit03, flipper_length_mm ~ bill_length_mm, cov.reduce = range)
+emmip(fit03, bill_length_mm ~ flipper_length_mm, cov.reduce = range)
+```
+
+## Other resources
+
+- It might be worthwhile to use the [`performance`](https://easystats.github.io/performance/) package to assess model fit (including assumptions using `check_model()`).
+- I use this a lot: the [`interactions`](https://interactions.jacob-long.com/) package for visualising interactions in GLM models. However it is very technical and not for beginners -- use if you are comfortable with R.
+- The [`gtsummary`](https://www.danieldsjoberg.com/gtsummary/) package is great for summarising regression models using [`tbl_regression()`](https://www.danieldsjoberg.com/gtsummary/reference/tbl_regression.html), but you may need to tweak it further to get the output you want. Another package that can do something similar is the `sjPlot` package, using [`tab_model()`](https://strengejacke.github.io/sjPlot/reference/tab_model.html). **Alternatively, you can manually create the table (sometimes it can be easier to copy numbers depending on your level of expertise).**
